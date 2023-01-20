@@ -7,12 +7,20 @@ Changing the MAC address can be useful in various situations, such as hiding you
 
 
 ## Contents
+- [Supported OS](#supported-os)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Available options](#available-options)
 - [Check interfaces & current MAC](#check-interfaces--current-mac)
 - [Usage](#usage)
 - [Contributing](#contributing)
+
+
+
+## Supported OS
+- GNU/Linux
+- Windows
+- macOS
 
 
 
