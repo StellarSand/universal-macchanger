@@ -1,6 +1,6 @@
 # macchanger-py
 
-**macchanger** tool allows you to change the MAC address of a network interface on Linux, macOS and Windows systems.
+**macchanger-py** tool allows you to change the MAC address of a network interface on GNU/Linux, macOS and Windows systems.
 
 Changing the MAC address can be useful in various situations, such as hiding your device's identity on a network, or bypassing MAC address filters.
 
@@ -9,6 +9,7 @@ Changing the MAC address can be useful in various situations, such as hiding you
 ## Contents
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Available options](#available-options)
 - [Check interfaces & current MAC](#check-interfaces--current-mac)
 - [Usage](#usage)
 - [Contributing](#contributing)
@@ -38,9 +39,19 @@ chmod +x macchanger
 
 
 
+## Available options:
+```
+-h, --help              Show this help message and exit
+-i, --interface         Interface name
+-m, --mac               Set a MAC address manually
+-r, --random            Set a random MAC address
+```
+
+
+
 ## Check interfaces & current MAC
-You can check all the interfaces & their current MAC address using terminal/cmd:
-- Linux: `ip a`
+You can check all the interfaces & their current MAC addresses using terminal/cmd:
+- GNU/Linux: `ip a`
 - Windows: `ipconfig \all`
 - macOS: `networksetup -listallhardwareports`
 
