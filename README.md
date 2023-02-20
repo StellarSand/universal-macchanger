@@ -1,6 +1,6 @@
-# macchanger-py
+# universal-macchanger
 
-**macchanger-py** tool allows you to change the MAC address of a network interface on GNU/Linux, macOS and Windows systems.
+**universal-macchanger** tool allows you to change the MAC address of a network interface on GNU/Linux, macOS and Windows systems.
 
 Changing the MAC address can be useful in various situations, such as hiding your device's identity on a network, or bypassing MAC address filters.
 
@@ -32,12 +32,12 @@ Changing the MAC address can be useful in various situations, such as hiding you
 ## Installation
 **1. Clone this repo:**
 ```
-git clone https://github.com/the-weird-aquarian/macchanger-py.git
+git clone https://github.com/the-weird-aquarian/universal-macchanger.git
 ```
 
 **2. Move into the project directory:**
 ```
-cd macchanger-py
+cd universal-macchanger
 ```
 
 **3. Give executable permissions to the script (Not required for Windows):**
@@ -87,4 +87,4 @@ python3 macchanger -i "Wireless Network Adapter" -r
 
 
 ## Contributing
-Pull requests can be submitted [here](https://github.com/the-weird-aquarian/macchanger-py/pulls). Any contribution to the project will be highly appreciated.
+Pull requests can be submitted [here](https://github.com/the-weird-aquarian/universal-macchanger/pulls). Any contribution to the project will be highly appreciated.
