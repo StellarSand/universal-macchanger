@@ -36,20 +36,20 @@ Inspired by [GNU MAC Changer](https://salsa.debian.org/debian/macchanger/), this
 
 
 ## Installation
-**1. Clone this repo:**
-```
-git clone https://github.com/StellarSand/universal-macchanger.git
-```
+1. Clone this repo:
+    ```
+    git clone https://github.com/StellarSand/universal-macchanger.git
+    ```
 
-**2. Move into the project directory:**
-```
-cd universal-macchanger
-```
+2. Move into the project directory:
+    ```
+    cd universal-macchanger
+    ```
 
-**3. Give executable permissions to the script (Not required for Windows):**
-```
-chmod +x macchanger
-```
+3. Give executable permissions to the script (Not required for Windows):
+    ```
+    chmod +x macchanger
+    ```
 
 
 
@@ -80,7 +80,7 @@ You can check all the interfaces & their current MAC addresses using terminal/cm
     ```
     python3 macchanger -i <interface> -m <MAC>
     ```
-    Example:
+    **Example**:
     ```
     python3 macchanger -i wlan0 -m 00:11:22:33:44:55
     ```
@@ -89,7 +89,7 @@ You can check all the interfaces & their current MAC addresses using terminal/cm
     ```
     python3 macchanger -i <interface> -r
     ```
-    Example:
+    **Example**:
     ```
     python3 macchanger -i "Wireless Network Adapter" -r
     ```
@@ -98,7 +98,7 @@ You can check all the interfaces & their current MAC addresses using terminal/cm
     ```
     python3 macchanger -s <vendor>
     ```
-    Example:
+    **Example**:
     ```
     python3 macchanger -s Cisco 
     ```
@@ -108,7 +108,7 @@ You can check all the interfaces & their current MAC addresses using terminal/cm
     python3 macchanger -s <vendor>
     python3 macchanger -i <interface> -v <index>
     ```
-    Example:
+    **Example**:
     ```
     python3 macchanger -s Cisco
     python3 macchanger -i eth0 -v W15
@@ -118,7 +118,7 @@ You can check all the interfaces & their current MAC addresses using terminal/cm
     ```
     python3 macchanger -i <interface> -rv
     ```
-    Example:
+    **Example**:
     ```
     python3 macchanger -i wlan0 -rv
     ```
