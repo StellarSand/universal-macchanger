@@ -1,14 +1,33 @@
 #!/usr/bin/env python3
 
+# Copyright (C) 2023-present StellarSand
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 import argparse
 import ctypes
 from platform import system
 from os import geteuid
-from random import randint
+from random import randint, choice as randchoice
 from sys import argv
 from subprocess import run, CalledProcessError, DEVNULL
 from re import match
+
+
+oui_file = "data/OUI.txt"
+wireless_file = "data/wireless.txt"
 
 
 def chk_root():
@@ -37,19 +56,48 @@ Usage:
 python3 macchanger -i <interface> -m <MAC>
 
 Description: 
-Change the MAC address of an interface.
+Spoof the MAC address of network interfaces.
 
 Options:
     -h, --help              Show this help message and exit
     -i, --interface         Interface name
     -m, --mac               Set a MAC address manually
     -r, --random            Set a random MAC address
+    -l, --list              Show all known vendors list
+    -s, --search            Search from known vendors list
+    -v, --vendor            Set MAC address based on index from vendors list
+    -rv, --randomvendor     Set a random MAC address from any known vendor
 
 Examples:
 python3 macchanger -i wlan0 -m 00:11:22:33:44:55
 python3 machanger -i "Wireless Network Connection" -r
+python3 macchanger -s Cisco
+python3 macchanger -i eth0 -v M12
+python3 macchanger -i wlan0 -rv
     ''')
     exit()
+
+
+def show_vendors_list(is_oui_list: bool, query=""):
+    if is_oui_list:
+        title = "Misc MACs"
+        file = oui_file
+        prepend_str = "M"
+    else:
+        title = "Wireless MACs"
+        file = wireless_file
+        prepend_str = "W"
+    print(f"\n{title}")
+    print("--------------------------------------------------")
+    print(f"Index\t\tMAC\t\tVendor")
+    print(f"-----\t\t---\t\t------")
+    with open(file, "r") as f:
+        for index, line in enumerate(f):
+            parts = line.strip().split()
+            mac_addr = ":".join(parts[0:3])
+            vendor_name = " ".join(parts[3:])
+            if query.lower() in vendor_name.lower():
+                print(f"{prepend_str}{index}\t\t{mac_addr}\t{vendor_name}")
 
 
 def get_args():
@@ -59,6 +107,10 @@ def get_args():
     arg_parser.add_argument("-i", "--interface", dest="interface")
     arg_parser.add_argument("-m", "--mac", dest="new_mac")
     arg_parser.add_argument("-r", "--random", action="store_true")
+    arg_parser.add_argument("-l", "--list", action="store_true")
+    arg_parser.add_argument("-s", "--search", dest="search_vendor")
+    arg_parser.add_argument("-v", "--vendor", dest="vendor_mac")
+    arg_parser.add_argument("-rv", "--randomvendor", action="store_true")
     
     return arg_parser
 
@@ -84,21 +136,64 @@ def is_wifi_macos(interface):
 
 
 def is_valid_mac(new_mac):
-    # The second check is for detecting whether first byte (or octet) of the MAC addr is even or not.
-    # If the least significant bit of the first byte
-    # is even, then it's unicast, otherwise multicast.
     return match("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", new_mac) and int(new_mac.split(':')[0], 16) % 2 == 0
+    # If the least significant bit of the first byte (or octet) is even (the second check),
+    # then it's unicast, otherwise multicast.
+
+
+def gen_mac_bytes(bytes_count: int):
+    return ":".join(["{:02X}".format(randint(0, 255)) for _ in range(bytes_count)])
+    # {:02X}".format(randint(0, 255)) generates a 2-digit hexadecimal value of a random int between 0-255
+    # In a MAC addr, each byte is denoted by two hexadecimal chars (or 8 bits),
+    # & the range of values that can be represented in 8 bits is 0-255 (2^8 -1)
 
 
 def gen_random_mac():
     random_new_mac = ""
     while not is_valid_mac(random_new_mac):
-        random_new_mac = ":".join(["{:02x}".format(randint(0, 255)) for _ in range(6)])
-        # {:02x}".format(randint(0, 255)) generates a 2-digit hexadecimal value of a random int between 0-255
-        # In a MAC addr, each byte is denoted by two hexadecimal chars (or 8 bits),
-        # & the range of values that can be represented in 8 bits is 0-255 (2^8 -1)
-
+        random_new_mac = gen_mac_bytes(6)
+        
     return random_new_mac
+
+
+def gen_vendor_mac(index_str):
+    if index_str.startswith("M"):
+        file = oui_file
+    elif index_str.startswith("W"):
+        file = wireless_file
+    else:
+        print("Invalid vendor index format.")
+        exit(1)
+    
+    index = int(index_str[1:])
+    vendor_prefix = ""
+    vendor_new_mac = ""
+    
+    with open(file, "r") as f:
+        lines = f.readlines()
+        parts = lines[index].strip().split()
+        vendor_prefix = ":".join(parts[0:3])
+    
+    while not is_valid_mac(vendor_new_mac):
+        vendor_new_mac = f"{vendor_prefix}:{gen_mac_bytes(3)}"
+    
+    return vendor_new_mac
+
+
+def gen_random_vendor_mac():
+    lines = []
+    for filename in [oui_file, wireless_file]:
+        with open(filename, "r") as f:
+            lines.extend(f.readlines())
+
+    line = randchoice(lines).strip().split() # Select a random line
+    vendor_prefix = ":".join(line[0:3])
+    random_vendor_new_mac = ""
+
+    while not is_valid_mac(random_vendor_new_mac):
+        random_vendor_new_mac = f"{vendor_prefix}:{gen_mac_bytes(3)}"
+
+    return random_vendor_new_mac
 
 
 def change_mac_lin(interface, new_mac):
@@ -157,10 +252,18 @@ arguments = get_args().parse_args()
 
 if len(argv) == 1 or arguments.help:
     usage() # Print usage if no options provided or -h/--help provided
+elif arguments.list:
+    show_vendors_list(is_oui_list=True)
+    print(f"\n##################################################")
+    show_vendors_list(is_oui_list=False)
+    exit(0)
+elif arguments.search_vendor:
+    show_vendors_list(is_oui_list=True, query=arguments.search_vendor)
+    print(f"\n##################################################")
+    show_vendors_list(is_oui_list=False, query=arguments.search_vendor)
+    exit(0)
 elif not arguments.interface:
     get_args().error("No interface provided.\nTry 'macchanger -h' for more info.")
-elif not arguments.new_mac and not arguments.random:
-    get_args().error("No MAC address provided.\nTry 'macchanger -h' for more info.")
 elif arguments.random and arguments.new_mac:
     get_args().error("You can not use -r/--random and -m/--mac options together.\nTry 'macchanger -h' for more info.")
 elif arguments.new_mac and not is_valid_mac(arguments.new_mac):
@@ -169,7 +272,10 @@ elif arguments.interface and not is_valid_interface(arguments.interface):
     get_args().error("Not a valid interface.\nExiting script ...\n")
 elif arguments.random:
     arguments.new_mac = gen_random_mac()
-
+elif arguments.vendor_mac:
+    arguments.new_mac = gen_vendor_mac(arguments.vendor_mac)
+elif arguments.randomvendor:
+    arguments.new_mac = gen_random_vendor_mac()
 
 if system() == "Linux":
     chk_root()
