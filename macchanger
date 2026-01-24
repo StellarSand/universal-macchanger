@@ -32,23 +32,21 @@ wireless_file = "data/wireless.txt"
 
 def chk_root():
     if geteuid() != 0:
-        print("\nPlease run the script as root and try again.\nExiting script...")
+        print(f"\nPlease run the script as root and try again.")
         exit(1)
 
 
 def chk_admin_win():
     if ctypes.windll.shell32.IsUserAnAdmin() != 1:
-        print("\nPlease run the script as admin and try again.\nExiting script...")
+        print(f"\nPlease run the script as admin and try again.")
         exit(1)
 
 
 def chk_package(command, package):
     run_command = run([command, package], stdout=DEVNULL, stderr=DEVNULL)
     if run_command.returncode != 0:
-        print(f"\n{package} package does not exist. Please install it first and try again.")
-        print("Exiting script ...\n")
+        print(f"\n{package} package does not exist. Please install it first and try again.\n")
         exit(1)
-
 
 def usage():
     print('''
@@ -70,13 +68,12 @@ Options:
 
 Examples:
 python3 macchanger -i wlan0 -m 00:11:22:33:44:55
-python3 machanger -i "Wireless Network Connection" -r
+python3 macchanger -i "Wireless Network Connection" -r
 python3 macchanger -s Cisco
 python3 macchanger -i eth0 -v M12
 python3 macchanger -i wlan0 -rv
     ''')
-    exit()
-
+    exit(0)
 
 def show_vendors_list(is_oui_list: bool, query=""):
     if is_oui_list:
@@ -98,21 +95,6 @@ def show_vendors_list(is_oui_list: bool, query=""):
             vendor_name = " ".join(parts[3:])
             if query.lower() in vendor_name.lower():
                 print(f"{prepend_str}{index}\t\t{mac_addr}\t{vendor_name}")
-
-
-def get_args():
-    arg_parser = argparse.ArgumentParser(add_help=False, usage="python3 macchanger -i <interface> -m <MAC>")
-    
-    arg_parser.add_argument("-h", "--help", action="store_true")
-    arg_parser.add_argument("-i", "--interface", dest="interface")
-    arg_parser.add_argument("-m", "--mac", dest="new_mac")
-    arg_parser.add_argument("-r", "--random", action="store_true")
-    arg_parser.add_argument("-l", "--list", action="store_true")
-    arg_parser.add_argument("-s", "--search", dest="search_vendor")
-    arg_parser.add_argument("-v", "--vendor", dest="vendor_mac")
-    arg_parser.add_argument("-rv", "--randomvendor", action="store_true")
-    
-    return arg_parser
 
 
 def is_valid_interface(interface):
@@ -206,6 +188,7 @@ def change_mac_lin(interface, new_mac):
         run(["ip", "link", "show", interface])
     except CalledProcessError as err:
         print(f"Some error occurred performing the task.\n{err}")
+        exit(1)
 
 
 def change_mac_win(interface, new_mac):
@@ -217,6 +200,7 @@ def change_mac_win(interface, new_mac):
         run(["getmac", "/v"])
     except CalledProcessError as err:
         print(f"Some error occurred performing the task.\n{err}")
+        exit(1)
 
 
 def change_ethernet_mac_macos(interface, new_mac):
@@ -229,6 +213,7 @@ def change_ethernet_mac_macos(interface, new_mac):
         run(["networksetup", "-getinfo", interface])
     except CalledProcessError as err:
         print(f"Some error occurred performing the task.\n{err}")
+        exit(1)
 
 
 def change_wifi_mac_macos(interface, new_mac):
@@ -246,51 +231,61 @@ def change_wifi_mac_macos(interface, new_mac):
         run(["networksetup", "-getinfo", interface])
     except CalledProcessError as err:
         print(f"Some error occurred performing the task.\n{err}")
+        exit(1)
 
 
-arguments = get_args().parse_args()
+arg_parser = argparse.ArgumentParser(add_help=False, usage="python3 macchanger -i <interface> -m <MAC>")
+arg_parser.add_argument("-h", "--help", action="store_true")
+arg_parser.add_argument("-i", "--interface", dest="interface")
+arg_parser.add_argument("-m", "--mac", dest="new_mac")
+arg_parser.add_argument("-r", "--random", action="store_true")
+arg_parser.add_argument("-l", "--list", action="store_true")
+arg_parser.add_argument("-s", "--search", dest="search_vendor")
+arg_parser.add_argument("-v", "--vendor", dest="vendor_mac")
+arg_parser.add_argument("-rv", "--randomvendor", action="store_true")
+args = arg_parser.parse_args()
 
-if len(argv) == 1 or arguments.help:
+if len(argv) == 1 or args.help:
     usage() # Print usage if no options provided or -h/--help provided
-elif arguments.list:
+elif args.list:
     show_vendors_list(is_oui_list=True)
     print(f"\n##################################################")
     show_vendors_list(is_oui_list=False)
     exit(0)
-elif arguments.search_vendor:
-    show_vendors_list(is_oui_list=True, query=arguments.search_vendor)
+elif args.search_vendor:
+    show_vendors_list(is_oui_list=True, query=args.search_vendor)
     print(f"\n##################################################")
-    show_vendors_list(is_oui_list=False, query=arguments.search_vendor)
+    show_vendors_list(is_oui_list=False, query=args.search_vendor)
     exit(0)
-elif not arguments.interface:
-    get_args().error("No interface provided.\nTry 'macchanger -h' for more info.")
-elif arguments.random and arguments.new_mac:
-    get_args().error("You can not use -r/--random and -m/--mac options together.\nTry 'macchanger -h' for more info.")
-elif arguments.new_mac and not is_valid_mac(arguments.new_mac):
-    get_args().error("Not a valid unicast MAC address\nExiting script ...\n")
-elif arguments.interface and not is_valid_interface(arguments.interface):
-    get_args().error("Not a valid interface.\nExiting script ...\n")
-elif arguments.random:
-    arguments.new_mac = gen_random_mac()
-elif arguments.vendor_mac:
-    arguments.new_mac = gen_vendor_mac(arguments.vendor_mac)
-elif arguments.randomvendor:
-    arguments.new_mac = gen_random_vendor_mac()
+elif not args.interface:
+    arg_parser.error(f"No interface provided.\nTry 'macchanger -h' for more info.\n")
+elif args.random and args.new_mac:
+    arg_parser.error(f"You can not use -r/--random and -m/--mac options together.\nTry 'macchanger -h' for more info.\n")
+elif args.new_mac and not is_valid_mac(args.new_mac):
+    arg_parser.error(f"Not a valid unicast MAC address.\n")
+elif args.interface and not is_valid_interface(args.interface):
+    arg_parser.error(f"Not a valid interface.\n")
+elif args.random:
+    args.new_mac = gen_random_mac()
+elif args.vendor_mac:
+    args.new_mac = gen_vendor_mac(args.vendor_mac)
+elif args.randomvendor:
+    args.new_mac = gen_random_vendor_mac()
 
 if system() == "Linux":
     chk_root()
-    change_mac_lin(arguments.interface, arguments.new_mac)
+    change_mac_lin(args.interface, args.new_mac)
 elif system() == "Windows":
     chk_admin_win()
-    change_mac_win(arguments.interface, arguments.new_mac)
+    change_mac_win(args.interface, args.new_mac)
 elif system() == "Darwin":
     chk_root()
-    if is_wifi_macos(arguments.interface):
-        change_wifi_mac_macos(arguments.interface, arguments.new_mac)
+    if is_wifi_macos(args.interface):
+        change_wifi_mac_macos(args.interface, args.new_mac)
     else:
-        change_ethernet_mac_macos(arguments.interface, arguments.new_mac)
+        change_ethernet_mac_macos(args.interface, args.new_mac)
 else:
-    print("\nUnknown OS detected. The script can't run on this OS.\nExiting script ...")
+    print(f"\nUnknown OS detected. The script can't run on this OS.\n")
     exit(1)
 
 

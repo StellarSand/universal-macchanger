@@ -3,7 +3,7 @@
 Spoof the MAC address of network interfaces on GNU/Linux, macOS and Windows systems.
 
 Inspired by [GNU MAC Changer](https://salsa.debian.org/debian/macchanger/), this project extends the functionality beyond GNU/Linux, making it compatible across all platforms.
-<br>Spoofing the MAC address can be useful in various situations, such as hiding your device's identity on a network, or bypassing MAC address filters.
+<br>Spoofing the MAC address can be useful in various situations, such as hiding your device's identity on a network, or bypassing MAC‑based network restrictions.
 
 
 
@@ -53,7 +53,7 @@ Inspired by [GNU MAC Changer](https://salsa.debian.org/debian/macchanger/), this
 
 
 
-## Available options:
+## Available options
 ```
 -h, --help              Show this help message and exit
 -i, --interface         Interface name
