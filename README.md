@@ -22,11 +22,12 @@ Inspired by [GNU MAC Changer](https://salsa.debian.org/debian/macchanger/), this
 
 
 ## Features
-- Set a specific MAC address on any network interface
-- Set a fully random MAC address
-- Set a MAC address of a specific vendor
-- Set a random MAC address from any known vendor
-- Display or search through a list of ~6,200 known vendors
+- Set a specific MAC address on any network interface.
+- Set a fully random MAC address.
+- Set a MAC address of a specific vendor.
+- Set a random MAC address from any known vendor.
+- Auto change MAC address at defined intervals.
+- Display or search through a list of ~6,200 known vendors.
 
 
 
@@ -63,6 +64,7 @@ Inspired by [GNU MAC Changer](https://salsa.debian.org/debian/macchanger/), this
 -s, --search            Search from known vendors list
 -v, --vendor            Set MAC address based on index from vendors list
 -rv, --randomvendor     Set a random MAC address from any known vendor
+-t, --time              Interval in seconds to auto change MAC address
 ```
 
 
@@ -121,6 +123,22 @@ You can check all the interfaces & their current MAC addresses using terminal/cm
     **Example**:
     ```
     python3 macchanger -i wlan0 -rv
+    ```
+
+- Auto change MAC address at defined intervals (can't be combined with -m/--mac option):
+    ```
+    python3 macchanger -i <interface> -t <time in seconds> -r/-rv/-v <index>
+    ```
+    **Example**:
+    ```
+    python3 macchanger -i wlan0 -t 60 -r
+    ```
+    ```
+    python3 macchanger -i eth0 -t 180 -rv
+    ```
+    ```
+    python3 macchanger -s Linksys
+    python3 macchanger -i "Wireless Network Adapter" -t 300 -v W8
     ```
 
 
