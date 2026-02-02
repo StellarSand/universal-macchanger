@@ -249,13 +249,33 @@ def change_wifi_mac_macos(interface, new_mac):
         exit(1)
 
 
+def get_new_mac_from_random_gen():
+    if args.random:
+        args.new_mac = gen_random_mac()
+    elif args.vendor_index:
+        args.new_mac = gen_vendor_mac(args.vendor_index)
+    elif args.randomvendor:
+        args.new_mac = gen_random_vendor_mac()
+
+
+def auto_change_mac(change_mac_func):
+    print(f"[>>] MAC address will change every {args.auto_change_time} seconds.")
+    is_first_time = True
+    while True:
+        if not is_first_time: # first time there will already be new MAC generated
+            get_new_mac_from_random_gen()
+        change_mac_func()
+        is_first_time = False
+        sleep(args.auto_change_time)
+
+
 arg_parser = argparse.ArgumentParser(add_help=False, usage="python3 macchanger -i <interface> -m <MAC>")
 mutually_exclusive_group = arg_parser.add_mutually_exclusive_group()
 arg_parser.add_argument("-h", "--help", action="store_true")
 arg_parser.add_argument("-i", "--interface", dest="interface")
 arg_parser.add_argument("-l", "--list", action="store_true")
 arg_parser.add_argument("-s", "--search", dest="search_vendor")
-arg_parser.add_argument("-t", "--time", dest="auto_change_time")
+arg_parser.add_argument("-t", "--time", type=int, dest="auto_change_time")
 mutually_exclusive_group.add_argument("-m", "--mac", dest="new_mac")
 mutually_exclusive_group.add_argument("-r", "--random", action="store_true")
 mutually_exclusive_group.add_argument("-v", "--vendor", dest="vendor_index")
@@ -282,52 +302,32 @@ elif args.interface and not is_valid_interface(args.interface):
     arg_parser.error(f"Not a valid interface.\n")
 elif args.auto_change_time and args.new_mac:
     arg_parser.error(f"You can not use -t/--time and -m/--mac options together.\nTry 'macchanger -h' for more info.\n")
-elif args.random:
-    args.new_mac = gen_random_mac()
-elif args.vendor_index:
-    args.new_mac = gen_vendor_mac(args.vendor_index)
-elif args.randomvendor:
-    args.new_mac = gen_random_vendor_mac()
+else:
+    get_new_mac_from_random_gen()
 
 if system() == "Linux":
     chk_root()
-    if args.auto_change_time:
-        print(f"[>>] MAC address will change every {args.auto_change_time} seconds.")
-        while True:
-            change_mac_lin(args.interface, args.new_mac)
-            sleep(args.auto_change_time)
-    else:
-        change_mac_lin(args.interface, args.new_mac)
+    change_mac = lambda: change_mac_lin(args.interface, args.new_mac)
 elif system() == "Windows":
     chk_admin_win()
-    if args.auto_change_time:
-        print(f"[>>] MAC address will change every {args.auto_change_time} seconds.")
-        while True:
-            change_mac_win(args.interface, args.new_mac)
-            sleep(args.auto_change_time)
-    else:
-        change_mac_win(args.interface, args.new_mac)
+    change_mac = lambda: change_mac_win(args.interface, args.new_mac)
 elif system() == "Darwin":
     chk_root()
     if is_wifi_macos(args.interface):
-        if args.auto_change_time:
-            print(f"[>>] MAC address will change every {args.auto_change_time} seconds.")
-            while True:
-                change_wifi_mac_macos(args.interface, args.new_mac)
-                sleep(args.auto_change_time)
-        else:
-            change_wifi_mac_macos(args.interface, args.new_mac)
+        change_mac = lambda: change_wifi_mac_macos(args.interface, args.new_mac)
     else:
-        if args.auto_change_time:
-            print(f"[>>] MAC address will change every {args.auto_change_time} seconds.")
-            while True:
-                change_ethernet_mac_macos(args.interface, args.new_mac)
-                sleep(args.auto_change_time)
-        else:
-            change_ethernet_mac_macos(args.interface, args.new_mac)
+        change_mac = lambda: change_ethernet_mac_macos(args.interface, args.new_mac)
 else:
-    print(f"\nUnknown OS detected. The script can't run on this OS.\n")
+    print(f"\n[!] Unknown OS detected. The script can't run on this OS.\n")
     exit(1)
+
+try:
+    if args.auto_change_time:
+        auto_change_mac(change_mac)
+    else:
+        change_mac()
+except KeyboardInterrupt:
+    print(f"\n[!] User interrupted.\n")
 
 
 exit()
