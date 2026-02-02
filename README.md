@@ -125,7 +125,7 @@ You can check all the interfaces & their current MAC addresses using terminal/cm
     python3 macchanger -i wlan0 -rv
     ```
 
-- Auto change MAC address at defined intervals (can't be combined with -m/--mac option):
+- Auto change MAC address at defined intervals (can't be combined with `-m`/`--mac` option):
     ```
     python3 macchanger -i <interface> -t <time in seconds> -r/-rv/-v <index>
     ```
