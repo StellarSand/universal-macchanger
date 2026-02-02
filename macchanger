@@ -87,17 +87,21 @@ def show_vendors_list(is_oui_list: bool, query=""):
         title = "Wireless MACs"
         file = wireless_file
         prepend_str = "W"
-    print(f"\n{title}")
-    print("--------------------------------------------------")
-    print(f"Index\t\tMAC\t\tVendor")
-    print(f"-----\t\t---\t\t------")
-    with open(file, "r") as f:
-        for index, line in enumerate(f):
-            parts = line.strip().split()
-            mac_addr = ":".join(parts[0:3])
-            vendor_name = " ".join(parts[3:])
-            if query.lower() in vendor_name.lower():
-                print(f"{prepend_str}{index}\t\t{mac_addr}\t{vendor_name}")
+    try:
+        with open(file, "r") as f:
+            print(f"\n{title}")
+            print("--------------------------------------------------")
+            print(f"Index\t\tMAC\t\tVendor")
+            print(f"-----\t\t---\t\t------")
+            for index, line in enumerate(f):
+                parts = line.strip().split()
+                mac_addr = ":".join(parts[0:3])
+                vendor_name = " ".join(parts[3:])
+                if query.lower() in vendor_name.lower():
+                    print(f"{prepend_str}{index}\t\t{mac_addr}\t{vendor_name}")
+    except FileNotFoundError:
+        print(f"Known vendor lists file not found: {file}\n")
+        exit(1)
 
 
 def is_valid_interface(interface):
@@ -147,17 +151,21 @@ def gen_vendor_mac(index_str):
     elif index_str.startswith("W"):
         file = wireless_file
     else:
-        print("Invalid vendor index format.")
+        print(f"Invalid vendor index format.\n")
         exit(1)
     
     index = int(index_str[1:])
     vendor_prefix = ""
     vendor_new_mac = ""
     
-    with open(file, "r") as f:
-        lines = f.readlines()
-        parts = lines[index].strip().split()
-        vendor_prefix = ":".join(parts[0:3])
+    try:
+        with open(file, "r") as f:
+            lines = f.readlines()
+            parts = lines[index].strip().split()
+            vendor_prefix = ":".join(parts[0:3])
+    except FileNotFoundError:
+        print(f"Known vendor lists file not found: {file}\n")
+        exit(1)
     
     while not is_valid_mac(vendor_new_mac):
         vendor_new_mac = f"{vendor_prefix}:{gen_mac_bytes(3)}"
@@ -168,8 +176,12 @@ def gen_vendor_mac(index_str):
 def gen_random_vendor_mac():
     lines = []
     for filename in [oui_file, wireless_file]:
-        with open(filename, "r") as f:
-            lines.extend(f.readlines())
+        try:
+            with open(filename, "r") as f:
+                lines.extend(f.readlines())
+        except FileNotFoundError:
+            print(f"Known vendor lists file not found: {filename}\n")
+            exit(1)
 
     line = randchoice(lines).strip().split() # Select a random line
     vendor_prefix = ":".join(line[0:3])
