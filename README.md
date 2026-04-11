@@ -22,12 +22,12 @@ Inspired by [GNU MAC Changer](https://salsa.debian.org/debian/macchanger/), this
 
 
 ## Features
-- Set a specific MAC address on any network interface.
-- Set a fully random MAC address.
-- Set a MAC address of a specific vendor.
-- Set a random MAC address from any known vendor.
-- Auto change MAC address at defined intervals.
-- Display or search through a list of ~6,200 known vendors.
+- Set a specific MAC address on any network interface
+- Set a fully random MAC address
+- Set a MAC address of a specific vendor
+- Set a random MAC address from any known vendor
+- Auto change MAC address at defined intervals
+- Display or search through a list of ~6,200 known vendors
 
 
 

@@ -302,7 +302,7 @@ elif args.interface and not is_valid_interface(args.interface):
     arg_parser.error(f"Not a valid interface.\n")
 elif args.auto_change_time and args.new_mac:
     arg_parser.error(f"You can not use -t/--time and -m/--mac options together.\nTry 'macchanger -h' for more info.\n")
-else:
+elif (args.random or args.vendor_index or args.randomvendor):
     get_new_mac_from_random_gen()
 
 if system() == "Linux":
